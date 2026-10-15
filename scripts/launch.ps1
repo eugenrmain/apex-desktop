@@ -6,7 +6,7 @@ $apexChoices=foreach($apexFolder in @('artifacts/apex-portable','artifacts/apex-
     $apexRank++
     $apexExecutable=Join-Path $apexWorkspace ($apexFolder+'/Apex Desktop.exe')
     if((Test-Path -LiteralPath $apexExecutable) -and (Test-Path -LiteralPath (Join-Path (Split-Path $apexExecutable) 'Apex Desktop.dll'))) {
-        [pscustomobject]@{Path=$apexExecutable;Version=[version]([Diagnostics.FileVersionInfo]::GetVersionInfo($apexExecutable).ProductVersion);Order=$apexRank}
+        [pscustomobject]@{Path=$apexExecutable;Version=[version]([Diagnostics.FileVersionInfo]::GetVersionInfo($apexExecutable).FileVersion);Order=$apexRank}
     }
 }
 $apexLatest=$apexChoices | Sort-Object @{Expression='Version';Descending=$true},@{Expression='Order';Descending=$false} | Select-Object -First 1

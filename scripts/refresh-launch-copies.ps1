@@ -4,7 +4,7 @@ $apexWorkspace = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $apexSource = [IO.Path]::GetFullPath($SourceDirectory)
 $apexPrefix = $apexWorkspace + [IO.Path]::DirectorySeparatorChar
 if (-not $apexSource.StartsWith($apexPrefix,[StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath (Join-Path $apexSource 'Apex Desktop.dll'))) { throw 'Source must be a complete Apex build within the workspace.' }
-$apexSourceVersion=[version]([Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $apexSource "Apex Desktop.exe")).ProductVersion)
+$apexSourceVersion=[version]([Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $apexSource "Apex Desktop.exe")).FileVersion)
 $apexFiles = @(Get-ChildItem -LiteralPath $apexSource -File -Recurse)
 $apexTargets = @('artifacts/apex-portable','artifacts/apex-candidate','artifacts/apex-preview')
 foreach ($apexRelativeTarget in $apexTargets) {
@@ -17,7 +17,7 @@ foreach ($apexRelativeTarget in $apexTargets) {
         $apexProbe = Split-Path -Parent $apexProbe
     }
     $apexTargetExe=Join-Path $apexTarget 'Apex Desktop.exe'
-    if((Test-Path -LiteralPath $apexTargetExe) -and [version]([Diagnostics.FileVersionInfo]::GetVersionInfo($apexTargetExe).ProductVersion) -gt $apexSourceVersion) { Write-Warning ('Skipping newer launch copy: '+$apexTarget);continue }
+    if((Test-Path -LiteralPath $apexTargetExe) -and [version]([Diagnostics.FileVersionInfo]::GetVersionInfo($apexTargetExe).FileVersion) -gt $apexSourceVersion) { Write-Warning ('Skipping newer launch copy: '+$apexTarget);continue }
     # Test loaded binaries before replacing any files. Never stop a running app.
     $apexHandles = [Collections.Generic.List[IDisposable]]::new()
     $apexBusy = $false
