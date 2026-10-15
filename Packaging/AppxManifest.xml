@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap desktop rescap">
-  <Identity Name="EugenRanow.ApexDesktop" Publisher="CN=Eugen Ranow" Version="0.4.11.0" ProcessorArchitecture="x64" />
+  <Identity Name="EugenRanow.ApexDesktop" Publisher="CN=Eugen Ranow" Version="1.0.0.0" ProcessorArchitecture="x64" />
   <Properties><DisplayName>Apex Desktop</DisplayName><PublisherDisplayName>APX Studios</PublisherDisplayName><Description>Windows tweaks, gaming preparation and local file tools.</Description><Logo>Assets\StoreLogo.png</Logo></Properties>
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" />

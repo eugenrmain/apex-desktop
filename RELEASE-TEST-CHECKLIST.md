@@ -1,12 +1,12 @@
 # Apex Desktop — APX Studios release checklist
 
-Candidate: **0.4.11**. Unchecked items remain pending; simulated tests do not imply live Windows tests passed. Record candidate version, Windows version, hardware, steps, expected/actual outcome and evidence. No public release with recovery or data-loss failures.
+Candidate: **1.0.0**. Unchecked items remain pending; simulated tests do not imply live Windows tests passed. Record candidate version, Windows version, hardware, steps, expected/actual outcome and evidence. No public release with recovery or data-loss failures.
 
-User-reported on 0.4.6: navigation, cleanup, compression, organizing/undo, Game Booster and completion sound work. Hardware readings work except CPU temperature; sensor driver was not installed or is uncertain. Retest revised workflows on 0.4.11. These reports do not cover installation, restore/rollback, tray-only Discord, signing or large/network datasets. Automated checks and the separate network integration test are recorded in RELEASE-VALIDATION.md.
+User-reported on 0.4.6: navigation, cleanup, compression, organizing/undo, Game Booster and completion sound work. Hardware readings work except CPU temperature; sensor driver was not installed or is uncertain. Retest revised workflows on 1.0.0. These reports do not cover installation, restore/rollback, tray-only Discord, signing or large/network datasets. Automated checks and the separate network integration test are recorded in RELEASE-VALIDATION.md.
 
 ## 1. Appearance and navigation
 
-- [ ] Launch `artifacts/apex-portable/Apex Desktop.exe`; verify version 0.4.11 and APX Studios.
+- [ ] Launch `artifacts/apex-portable/Apex Desktop.exe`; verify version 1.0.0 and APX Studios.
 - [ ] Compare absent. Main navigation: Home, System, Performance, Media, Settings. System cards: Storage, Cleanup, Organize, File Actions. Performance cards: Windows Settings, Diagnostics, Game Booster. Media cards: Compress, Convert.
 - [ ] System/Performance/Media always open their landing pages, including after visiting a tool. Cards match Home's glass style, stay a compact consistent height and remain smaller than the Home cards; no horizontal tool-tab strip remains. Root directory is ApexDesktop and launcher paths still resolve.
 - [ ] Every page has the universal Home breadcrumb/icon. Tool pages show Home / workspace / tool; Home and workspace links navigate correctly. Keyboard and screen-reader names remain clear.
