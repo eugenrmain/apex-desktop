@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap desktop rescap">
+  <Identity Name="EugenRanow.ApexDesktop" Publisher="CN=Eugen Ranow" Version="0.4.11.0" ProcessorArchitecture="x64" />
+  <Properties><DisplayName>Apex Desktop</DisplayName><PublisherDisplayName>APX Studios</PublisherDisplayName><Description>Windows tweaks, gaming preparation and local file tools.</Description><Logo>Assets\StoreLogo.png</Logo></Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" />
+    <PackageDependency Name="Microsoft.VCLibs.140.00.UWPDesktop" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" MinVersion="14.0.30704.0" />
+  </Dependencies>
+  <Resources><Resource Language="en-us" /></Resources>
+  <Applications>
+    <Application Id="Apex" Executable="Apex Desktop.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="Apex Desktop" Description="Windows tweaks, gaming preparation and local file tools." BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+  <Capabilities><rescap:Capability Name="runFullTrust" /><rescap:Capability Name="allowElevation" /></Capabilities>
+</Package>

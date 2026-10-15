@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Apex.Settings</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Services/AppDataPaths.cs" Link="AppDataPaths.cs" />
+    <Compile Include="../Services/PerformancePlans.cs" Link="PerformancePlans.cs" />
+    <Compile Include="../Services/TaskOutcome.cs" Link="TaskOutcome.cs" />
+    <Compile Include="../Services/FileToolkit.cs" Link="FileToolkit.cs" />
+    <Compile Include="../Platform/WindowsActions.cs" Link="WindowsActions.cs" />
+    <Compile Include="../Platform/WindowsPerformance.cs" Link="WindowsPerformance.cs" />
+    <Compile Include="../Platform/WindowsVisualEffects.cs" Link="WindowsVisualEffects.cs" />
+    <Compile Include="../Platform/WindowsMouse.cs" Link="WindowsMouse.cs" />
+    <Compile Include="../Platform/WindowsDisplay.cs" Link="WindowsDisplay.cs" />
+    <Compile Include="../Services/DisplayChangeGuard.cs" Link="DisplayChangeGuard.cs" />
+  </ItemGroup>
+</Project>

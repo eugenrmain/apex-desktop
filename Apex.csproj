@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <OutputType>WinExe</OutputType>
+    <Product>Apex Desktop</Product>
+    <Title>Apex Desktop</Title>
+    <AssemblyName>Apex Desktop</AssemblyName>
+    <Company>APX Studios</Company>
+    <Authors>APX Studios</Authors>
+    <Description>Windows tweaks, gaming preparation and local file tools.</Description>
+    <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+    <UseWinUI>true</UseWinUI>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/Apex.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="*.cs;Services/*.cs;Platform/*.cs;Models/*.cs" />
+    <ApplicationDefinition Include="App.xaml" />
+    <Compile Remove="Recovery/**/*.cs" />
+    <Compile Remove="Sensors/**/*.cs" />
+    <Compile Remove="SettingsHelper/**/*.cs" />
+    <Compile Remove="CaptureHelper/**/*.cs" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260804001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Vendor/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/*.wav" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/*.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/Apex.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

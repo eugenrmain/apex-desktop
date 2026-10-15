@@ -1,0 +1,17 @@
+.tools/
+bin/
+obj/
+artifacts/
+dist/
+.vs/
+*.user
+*.pfx
+
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.snk
+*.p12
+*.publishsettings

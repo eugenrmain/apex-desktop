@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Apex.Recovery</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Services/AppDataPaths.cs" Link="AppDataPaths.cs" />
+    <Compile Include="../Services/FileToolkit.cs" Link="FileToolkit.cs" />
+    <Compile Include="../Platform/WindowsActions.cs" Link="WindowsActions.cs" />
+  </ItemGroup>
+</Project>

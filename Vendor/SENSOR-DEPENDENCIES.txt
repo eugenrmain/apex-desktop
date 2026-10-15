@@ -1,0 +1,30 @@
+Bundled sensor dependencies (resolved NuGet metadata)
+LibreHardwareMonitorLib source: https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/tree/v0.9.6
+
+BlackSharp.Core/1.0.7 | MPL-2.0 | https://github.com/Blacktempel/BlackSharp
+DiskInfoToolkit/1.1.2 | MPL-2.0 | https://github.com/Blacktempel/DiskInfoToolkit
+HidSharp/2.6.4 | LICENSE.txt | https://software.seekye.com/hidsharp
+LibreHardwareMonitorLib/0.9.6 | MPL-2.0 | https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
+Mono.Posix.NETStandard/1.0.0 | https://go.microsoft.com/fwlink/?linkid=869050 | https://go.microsoft.com/fwlink/?linkid=869051
+RAMSPDToolkit-NDD/1.4.2 | MPL-2.0 | https://github.com/Blacktempel/RAMSPDToolkit
+runtime.android-arm.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.android-arm64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.android-x64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.android-x86.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-arm.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-arm64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-bionic-arm64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-bionic-x64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-musl-arm.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-musl-arm64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-musl-x64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.linux-x64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.maccatalyst-arm64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.maccatalyst-x64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.osx-arm64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+runtime.osx-x64.runtime.native.System.IO.Ports/10.0.3 | MIT | https://dot.net/
+System.CodeDom/10.0.2 | MIT | https://dot.net/
+System.IO.Ports/10.0.3 | MIT | https://dot.net/
+System.Management/10.0.2 | MIT | https://dot.net/
+System.Threading.AccessControl/10.0.3 | MIT | https://dot.net/

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#A35EF2"/><stop offset="1" stop-color="#2DB8FC"/></linearGradient>
+    <radialGradient id="core"><stop stop-color="#93E0FF" stop-opacity=".55"/><stop offset="1" stop-color="#93E0FF" stop-opacity="0"/></radialGradient>
+    <clipPath id="flame"><path d="M36 3C36 17 26 21 24 32C20 29 18 24 18 18C8 28 5 37 7 46C9 57 20 62 31 62C48 62 59 51 57 37C56 26 48 19 45 13C46 24 41 29 38 30C42 19 42 11 36 3Z"/></clipPath>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#0B1022"/>
+  <g transform="translate(4.23 3.80) scale(.8678)">
+    <path d="M36 3C36 17 26 21 24 32C20 29 18 24 18 18C8 28 5 37 7 46C9 57 20 62 31 62C48 62 59 51 57 37C56 26 48 19 45 13C46 24 41 29 38 30C42 19 42 11 36 3Z" fill="url(#body)"/>
+    <circle cx="32" cy="43" r="12" clip-path="url(#flame)" fill="url(#core)"/>
+    <path d="M33 34L28 43L32 43L30 50L38 39L34 39L36 34Z" fill="#FFFFFF"/>
+  </g>
+</svg>

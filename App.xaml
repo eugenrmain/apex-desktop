@@ -1,0 +1,37 @@
+<Application x:Class="Apex.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries><XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" /></ResourceDictionary.MergedDictionaries>
+      <!-- Shared controls use the same cool palette as the custom glass widgets. -->
+      <Color x:Key="SystemAccentColor">#67D8FF</Color>
+      <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="#67D8FF" />
+      <SolidColorBrush x:Key="AccentButtonBackground" Color="#67D8FF" />
+      <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#9EE7FF" />
+      <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#49B8E9" />
+      <SolidColorBrush x:Key="AccentButtonForeground" Color="#071426" />
+      <SolidColorBrush x:Key="AccentButtonForegroundPointerOver" Color="#071426" />
+      <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#071426" />
+      <SolidColorBrush x:Key="ButtonBackground" Color="#7020304D" />
+      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#A12B4063" />
+      <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#C0243654" />
+      <SolidColorBrush x:Key="ButtonBorderBrush" Color="#456C92C7" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#927DDCFF" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#B867D8FF" />
+      <SolidColorBrush x:Key="ButtonForeground" Color="#DEEAFF" />
+      <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#70152239" />
+      <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="#90233551" />
+      <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="#90152239" />
+      <SolidColorBrush x:Key="ControlStrongFillColorDefaultBrush" Color="#9CACC7" />
+      <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="#456C92C7" />
+      <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="#606C92C7" />
+      <SolidColorBrush x:Key="TextControlBackground" Color="#90152239" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#A020304D" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#E00B1429" />
+      <SolidColorBrush x:Key="ComboBoxBackground" Color="#90152239" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#A020304D" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#F0101B33" />
+      <SolidColorBrush x:Key="ContentDialogBackground" Color="#F0101B33" />
+      <SolidColorBrush x:Key="FlyoutBackground" Color="#F0101B33" />
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>
