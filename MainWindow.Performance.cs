@@ -141,16 +141,16 @@ public sealed partial class MainWindow
         page.Children.Add(categories);
         var footer = new StackPanel { Spacing = 12 };
         var review = ActionButton("\uE73E", "Review & apply", (_, _) => ReviewPerformance());
-        review.Background = Brush("#83DDFF");
+        review.Background = Brush("#FF202733");
         if (review.Content is StackPanel r)
             foreach (var child in r.Children)
             {
                 if (child is TextBlock t)
-                    t.Foreground = Brush("#101B33");
+                    t.Foreground = Brush("#EDF1F7");
                 if (child is FontIcon f)
-                    f.Foreground = Brush("#101B33");
+                    f.Foreground = Brush("#EDF1F7");
             }
-        review.MinHeight = 48;
+        review.MinHeight = 36;
         footer.Children.Add(review);
         footer.Children.Add(SelectionPair(ActionButton("\uE711", "Clear selections", (_, _) => { performanceDraft.Clear(); refreshPerformance?.Invoke(); }), ActionButton("\uE777", "Restore changes", (_, _) => ShowRestorePerformance())));
         page.Children.Add(Glass(footer));

@@ -6,12 +6,14 @@ if (-not (Test-Path -LiteralPath $apxDotnet)) { throw 'Run scripts/setup.ps1 fir
 $env:DOTNET_CLI_HOME = Join-Path $apxWorkspace '.tools/cli'
 $env:NUGET_PACKAGES = Join-Path $apxWorkspace '.tools/nuget'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
-$apxOutput = Join-Path $apxWorkspace 'artifacts/network-check'
+$apxOutput = Join-Path $apxWorkspace 'artifacts/apx-release-1.0.0'
 foreach ($apxProject in @('NetworkHelper/Apex.Network.csproj', 'scripts/NetworkCheck/Apex.NetworkCheck.csproj')) {
     & $apxDotnet publish (Join-Path $apxWorkspace $apxProject) -c Release -o $apxOutput
     if ($LASTEXITCODE -ne 0) { throw 'Network verification build failed.' }
 }
-$apxResult = Join-Path $apxOutput $(if ($Cancel) { 'cancellation-results.json' } else { 'sample-results.json' })
+$apxEvidence = Join-Path $apxOutput 'verification'
+New-Item -ItemType Directory -Path $apxEvidence -Force | Out-Null
+$apxResult = Join-Path $apxEvidence $(if ($Cancel) { 'network-cancellation-results.json' } else { 'network-sample-results.json' })
 $apxArguments = '"{0}"' -f $apxResult
 if ($Cancel) { $apxArguments += ' --cancel' }
 Write-Host 'Approve the Apex network helper prompt. Only generated loopback traffic is used; no apps or files are changed.'

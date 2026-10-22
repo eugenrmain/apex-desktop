@@ -8,7 +8,7 @@ namespace Apex.Platform;
 public sealed class WindowsMonitoring : IMonitoringService
 {
     private ulong previousIdle, previousKernel, previousUser;
-    private long previousStamp;
+    private long previousStamp, previousDetailStamp;
     private readonly Dictionary<int, (long Started, double Cpu)> previousProcesses = [];
     private readonly Dictionary<string, (long Received, long Sent)> previousNetwork = [];
     private readonly PdhCounter diskRead = new("\\PhysicalDisk(_Total)\\Disk Read Bytes/sec");
@@ -47,20 +47,21 @@ public sealed class WindowsMonitoring : IMonitoringService
         }
     }
     private readonly SemaphoreSlim sampleGate = new(1, 1);
-    public async Task<MonitorSample> SampleAsync(CancellationToken token)
+    public Task<MonitorSample> SampleAsync(CancellationToken token) => SampleAsync(token, true);
+    // Totals only (CPU, RAM, GPU) skip the per-process and network walks that dominate sampling cost.
+    public async Task<MonitorSample> SampleAsync(CancellationToken token, bool detailed)
     {
         await sampleGate.WaitAsync(token);
         try
         {
-            return await Task.Run(() => Sample(token), token);
+            return await Task.Run(() => Sample(token, detailed), token);
         }
         finally { sampleGate.Release(); }
     }
-    private MonitorSample Sample(CancellationToken token)
+    private MonitorSample Sample(CancellationToken token, bool detailed)
     {
         token.ThrowIfCancellationRequested();
         long stamp = Stopwatch.GetTimestamp();
-        double elapsed = previousStamp == 0 ? 0 : (stamp - previousStamp) / (double)Stopwatch.Frequency;
         double? cpu = null;
         if (GetSystemTimes(out var idle, out var kernel, out var user))
         {
@@ -74,6 +75,13 @@ public sealed class WindowsMonitoring : IMonitoringService
         var memory = new MemoryStatus { Length = (uint)Marshal.SizeOf<MemoryStatus>() };
         if (!GlobalMemoryStatusEx(ref memory))
             throw new System.ComponentModel.Win32Exception();
+        if (!detailed)
+        {
+            previousStamp = stamp;
+            return new(DateTime.UtcNow, cpu, (long)(memory.TotalPhysical - memory.AvailablePhysical), (long)memory.TotalPhysical, gpu.GpuValue(), null, null, null, null, [], Sensors, null);
+        }
+        // Process and network deltas use their own clock because totals-only samples run in between.
+        double elapsed = previousDetailStamp == 0 ? 0 : (stamp - previousDetailStamp) / (double)Stopwatch.Frequency;
         var processes = new List<ProcessUsage>();
         var live = new HashSet<int>();
         foreach (var process in Process.GetProcesses())
@@ -123,7 +131,7 @@ public sealed class WindowsMonitoring : IMonitoringService
             }
             catch (NetworkInformationException) { }
         }
-        previousStamp = stamp;
+        previousStamp = previousDetailStamp = stamp;
         return new(DateTime.UtcNow, cpu, (long)(memory.TotalPhysical - memory.AvailablePhysical), (long)memory.TotalPhysical, gpu.GpuValue(), diskRead.Value(), diskWrite.Value(), available ? received : null, available ? sent : null, processes, Sensors, null);
     }
     public void Dispose()

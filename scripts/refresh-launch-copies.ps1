@@ -6,7 +6,7 @@ $apexPrefix = $apexWorkspace + [IO.Path]::DirectorySeparatorChar
 if (-not $apexSource.StartsWith($apexPrefix,[StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath (Join-Path $apexSource 'Apex Desktop.dll'))) { throw 'Source must be a complete Apex build within the workspace.' }
 $apexSourceVersion=[version]([Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $apexSource "Apex Desktop.exe")).FileVersion)
 $apexFiles = @(Get-ChildItem -LiteralPath $apexSource -File -Recurse)
-$apexTargets = @('artifacts/apex-portable','artifacts/apex-candidate','artifacts/apex-preview')
+$apexTargets = @('artifacts/apx-release-1.0.0')
 foreach ($apexRelativeTarget in $apexTargets) {
     $apexTarget = [IO.Path]::GetFullPath((Join-Path $apexWorkspace $apexRelativeTarget))
     if ($apexTarget.Equals($apexSource,[StringComparison]::OrdinalIgnoreCase)) { continue }

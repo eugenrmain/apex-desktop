@@ -251,43 +251,16 @@ public sealed partial class MainWindow
                     other.Button.IsEnabled = other.WasEnabled;
             }
         });
-        run.Background = Brush("#83DDFF");
-        run.Foreground = Brush("#101B33");
-        run.Resources["ButtonBackgroundPointerOver"] = Brush("#B0E9FF");
-        run.Resources["ButtonBackgroundPressed"] = Brush("#A09FFF");
-        run.Resources["ButtonForegroundPointerOver"] = Brush("#101B33");
-        run.Resources["ButtonForegroundPressed"] = Brush("#101B33");
-        if (run.Content is StackPanel runContent)
-            foreach (var child in runContent.Children)
-            {
-                if (child is TextBlock labelText)
-                    labelText.Foreground = Brush("#101B33");
-                if (child is FontIcon labelIcon)
-                    labelIcon.Foreground = Brush("#101B33");
-            }
-        bool primary = new[] { "Clean", "Scan", "Move files", "Compress", "Convert to MP3", "Prepare for gaming", "Confirm & apply", "Move to Recycle Bin", "Scan network usage" }.Contains(label);
-        if (primary)
-        {
-            run.MinHeight = 48;
-            run.Padding = new Thickness(20, 12, 20, 12);
-            run.BorderBrush = Brush("#D1A4E9FF");
-            run.BorderThickness = new Thickness(1);
-        }
-        else
-        {
-            run.Resources["ButtonBackgroundPointerOver"] = Brush("#A0304D6A");
-            run.Resources["ButtonForegroundPointerOver"] = Brush("#EDF3FF");
-            run.Background = Brush("#7020304D");
-            run.Foreground = Brush("#DEEAFF");
-            if (run.Content is StackPanel normal)
-                foreach (var child in normal.Children)
-                {
-                    if (child is TextBlock text)
-                        text.Foreground = Brush("#DEEAFF");
-                    if (child is FontIcon icon)
-                        icon.Foreground = Brush("#DEEAFF");
-                }
-        }
+        run.Background = Brush("#FF202733");
+        run.Foreground = Brush("#EDF1F7");
+        run.BorderBrush = Brush("#506E8194");
+        run.BorderThickness = new Thickness(1);
+        run.Resources["ButtonBackgroundPointerOver"] = Brush("#FF2B3442");
+        run.Resources["ButtonBackgroundPressed"] = Brush("#FF171D27");
+        run.Resources["ButtonForegroundPointerOver"] = Brush("#EDF1F7");
+        run.Resources["ButtonForegroundPressed"] = Brush("#EDF1F7");
+        run.MinHeight = 36;
+        run.Padding = new Thickness(12, 7, 12, 7);
         cancel.Click += (_, _) => simulation?.Cancel();
         row.Children.Add(run);
         row.Children.Add(cancel);

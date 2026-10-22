@@ -1,3 +1,25 @@
+# Release validation — 2026-10-19
+
+## Current 1.0.0 release
+
+The repeated APX STUDIOS label above the Home heading was removed. The title-bar branding remains. The app and all five helpers were rebuilt into `artifacts/apx-release-1.0.0`; no other artifacts build directories were created.
+
+**318 checks passed:**
+
+- 182 functional checks: toolkit scans, comparison, moves/undo, collision and changed-file protection, disposable recycling/deletion, recovery request validation, isolated migration, settings apply/restore through fake providers, Game Booster policy and cancellation, media compression, and MP4-to-MP3 conversion/error handling.
+- 121 UI checks: all fourteen pages at 800x600, 1100x760 and 1600x1000; narrower content and maximized layouts; card sizing, real navigation/breadcrumb invocation, cleanup result cancellation, selection retention, popup sizing/focus, modal navigation, notifications, and opaque fallback. Representative Home, Media, Cleanup, Storage, Game Booster and Windows Settings captures were inspected.
+- 5 live monitoring checks: actual CPU/RAM bounds, a valid GPU utilization reading, continued refresh, footer visibility on all fourteen pages, and removal of the repeated Home studio label.
+- 4 scan checks: exact file and byte totals for 1,000 and 10,000 generated files, explicit partial results at a lowered entry cap, and in-flight cancellation. Scan times were 121.19 ms and 1,100.57 ms; observed process peak working sets were approximately 31 and 49 MiB. Cancellation completed in 1.40 ms after the request. These are small disposable local files, not a cloud/network or large-media workload.
+- 6 real network integration checks: pre-cancellation, authenticated administrator helper connection, generated loopback UDP attribution, owned-session shutdown, in-flight cancellation and helper exit. The sample attributed approximately 1.08 MB/s to the intended test process.
+
+Source hygiene and diff whitespace checks passed. The existing converter-button UI assertion was updated for the approved 36px compact action buttons. Full verification now includes both toolkit and bounded release suites. A read-only `--verify-live` mode covers the footer monitoring regression.
+
+Evidence: `artifacts/apx-release-1.0.0/verification/results.json`, `live-results.json`, `scan-results.json`, `network-sample-results.json`, `network-cancellation-results.json`, and page captures. Test data uses an isolated APX_DATA_ROOT. Temporary scan/network test runners were removed from the delivered release folder afterward.
+
+Limits: live Windows settings apply/restore, display rollback, real user-app closure, game FPS capture, driver installation/temperature coverage, Windows DPI/high-contrast changes, and clean-machine signed Store install/update/uninstall were not exercised in this run. Existing release gates below remain open. NuGet vulnerability metadata could not be fetched during the build (NU1900); compilation/publishing succeeded.
+
+---
+
 # Candidate validation — 2026-10-15
 
 ## Navigation card sizing and cleanup cancellation — version 0.4.11

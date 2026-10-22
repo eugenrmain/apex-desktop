@@ -12,44 +12,51 @@ for box, color, blur in [((450, -300, 1400, 470), (47, 106, 240, 86), 160), ((95
     canvas = Image.alpha_composite(canvas, layer.filter(ImageFilter.GaussianBlur(blur)))
 canvas.save(assets / "Backdrop.png")
 
-# Antialiased icon geometry matches the editable vector source.
-def icon(size, plated=True):
-    scale = 4
-    image = Image.new("RGBA", (size * scale, size * scale), (0, 0, 0, 0))
-    if plated:
-        ImageDraw.Draw(image).rounded_rectangle((0,0,image.width-1,image.height-1),radius=image.width*.24,fill="#0B1022")
-    def points(values): return [(int(((x-32)*.80/59+.5)*size*scale), int(((y-32.5)*.80/59+.5)*size*scale)) for x,y in values]
-    flame = [(36,3)]
-    def cubic(a,b,c):
-        start = flame[-1]
-        for step in range(1,33):
-            t = step/32
-            flame.append(tuple((1-t)**3*start[i]+3*(1-t)**2*t*a[i]+3*(1-t)*t*t*b[i]+t**3*c[i] for i in range(2)))
-    for a,b,c in [((36,17),(26,21),(24,32)),((20,29),(18,24),(18,18)),((8,28),(5,37),(7,46)),((9,57),(20,62),(31,62)),((48,62),(59,51),(57,37)),((56,26),(48,19),(45,13)),((46,24),(41,29),(38,30)),((42,19),(42,11),(36,3))]: cubic(a,b,c)
-    mask = Image.new("L", image.size)
-    md = ImageDraw.Draw(mask)
-    md.polygon(points(flame),fill=255)
-    # Violet at the tip, blue/cyan at the base; the lightning bolt stays white.
-    color = Image.new("RGBA", image.size)
-    pixels = color.load()
-    for y in range(image.height):
-        for x in range(image.width):
-            fx = (x/image.width-.5)*59/.80+32
-            fy = (y/image.height-.5)*59/.80+32.5
-            t = max(0,min(1,(fy-3)/59))
-            body = (int(163-118*t),int(94+90*t),int(242+10*t))
-            core = .55*exp(-((fx-32)**2+(fy-43)**2)/55)
-            pixels[x,y] = tuple(int(base+(hot-base)*core) for base,hot in zip(body,(147,224,255)))+(255,)
-    image.paste(color,(0,0),mask)
-    ImageDraw.Draw(image).polygon(points([(33,34),(28,43),(32,43),(30,50),(38,39),(34,39),(36,34)]),fill="#FFFFFF")
-    return image.resize((size,size),Image.Resampling.LANCZOS)
+# Original two-tongue flame narrowed to 82% width, on the 64-unit grid shared with Assets/Apex.svg and MainWindow.Brand.cs.
+FLAME = [(35.28, 3), [(35.28, 17), (27.08, 21), (25.44, 32)], [(22.16, 29), (20.52, 24), (20.52, 18)], [(12.32, 28), (9.86, 37), (11.5, 46)], [(13.14, 57), (22.16, 62), (31.18, 62)], [(45.12, 62), (54.14, 51), (52.5, 37)], [(51.68, 26), (45.12, 19), (42.66, 13)], [(43.48, 24), (39.38, 29), (36.92, 30)], [(40.2, 19), (40.2, 11), (35.28, 3)]]
+BOLT = [(32.82, 32.4), (27.9, 43.2), (31.84, 43.2), (29.87, 51.6), (37.74, 38.4), (33.81, 38.4), (35.78, 32.4)]
+# Dark purple tip through indigo to deep blue at the base.
+STOPS = [(0, (122, 69, 230)), (.5, (79, 75, 216)), (1, (47, 98, 240))]
 
-for name,size in [("Square44x44Logo.png",44),("Square150x150Logo.png",150),("StoreLogo.png",50),("AppIcon.png",256)]: icon(size).save(assets/name)
-icon(256, plated=False).save(assets/"FlameMark.png")
-for size in [16,24,32,48,256]:
+def outline(shape):
+    points = [shape[0]]
+    for a, b, c in shape[1:]:
+        start = points[-1]
+        for step in range(1, 33):
+            t = step / 32
+            points.append(tuple((1-t)**3*start[i] + 3*(1-t)**2*t*a[i] + 3*(1-t)*t*t*b[i] + t**3*c[i] for i in range(2)))
+    return points
+
+def icon(size, plated=True):
+    scale = 8
+    px = size * scale
+    image = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+    if plated:
+        ImageDraw.Draw(image).rounded_rectangle((0, 0, px - 1, px - 1), radius=px * .24, fill="#0A0F1E")
+    # Plated icons keep breathing room; tiny sizes enlarge the flame slightly to stay legible.
+    fill = (.84 if size <= 24 else .76) if plated else .96
+    def at(x, y): return ((.5 + (x - 32) / 59 * fill) * px, (.5 + (y - 32.5) / 59 * fill) * px)
+    mask = Image.new("L", image.size)
+    ImageDraw.Draw(mask).polygon([at(x, y) for x, y in outline(FLAME)], fill=255)
+    color = Image.new("RGBA", image.size)
+    top, bottom = at(32, 3)[1], at(32, 62)[1]
+    draw = ImageDraw.Draw(color)
+    for y in range(px):
+        t = min(1, max(0, (y - top) / (bottom - top)))
+        (o0, c0), (o1, c1) = (STOPS[0], STOPS[1]) if t <= STOPS[1][0] else (STOPS[1], STOPS[2])
+        k = (t - o0) / (o1 - o0)
+        draw.line([(0, y), (px, y)], fill=tuple(int(c0[i] + (c1[i] - c0[i]) * k) for i in range(3)) + (255,))
+    image.paste(color, (0, 0), mask)
+    ImageDraw.Draw(image).polygon([at(x, y) for x, y in BOLT], fill="#FFFFFF")
+    return image.resize((size, size), Image.Resampling.LANCZOS)
+
+for name, size in [("Square44x44Logo.png", 44), ("Square150x150Logo.png", 150), ("StoreLogo.png", 50), ("AppIcon.png", 256)]: icon(size).save(assets / name)
+for size in [16, 24, 32, 48, 256]:
     for suffix in ["", "_altform-unplated"]:
-        icon(size, plated=not suffix).save(assets/f"Square44x44Logo.targetsize-{size}{suffix}.png")
-icon(256).save(assets/"Apex.ico",sizes=[(16,16),(24,24),(32,32),(48,48),(256,256)])
+        icon(size, plated=not suffix).save(assets / f"Square44x44Logo.targetsize-{size}{suffix}.png")
+# Each ICO frame is rendered at its own size so 16px keeps its heavier stroke.
+frames = [icon(s) for s in [256, 48, 32, 24, 16]]
+frames[0].save(assets / "Apex.ico", sizes=[(f.width, f.height) for f in frames], append_images=frames[1:])
 
 # Short, quiet synthesized completion cue. Generated once, never synthesized on the UI thread.
 import math, struct, wave

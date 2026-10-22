@@ -32,23 +32,22 @@ public sealed partial class MainWindow
         Option("Older files", "\uE823", "Files older than your chosen age.");
         Option("Browser cache", "\uE774", "Cached files. Keeps history and cookies.");
         Option("Recycle Bin", "\uE74D", "Empty after confirmation.");
-        page.Children.Add(WidgetGrid(new[] { options[0], options[1], options[2], options[6], options[7] }));
+        page.Children.Add(WidgetGrid(new[] { options[0], options[1], options[2], options[6], options[7] }, dense: true));
         var personalFiles = new Expander
         {
             Header = "Personal files & backups",
-            Content = WidgetGrid(new[] { options[3], options[4], options[5] }),
+            Content = WidgetGrid(new[] { options[3], options[4], options[5] }, dense: true),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Stretch
         };
         page.Children.Add(personalFiles);
         var selectCategories = ActionButton("\uE73A", "Select all categories", (_, _) => { personalFiles.IsExpanded = true; foreach (var toggle in options.OfType<Microsoft.UI.Xaml.Controls.Primitives.ToggleButton>()) if (toggle.IsEnabled) toggle.IsChecked = true; });
-        page.Children.Add(selectCategories);
         var gamePanel = new StackPanel { Spacing = 12 };
         var gameStatus = Text("Detect games automatically, or add a folder.", Ui.Supporting, "#A9BAD4");
         gamePanel.Children.Add(gameStatus);
         var gameSelector = new ComboBox { Header = "Games", HorizontalAlignment = HorizontalAlignment.Stretch, Visibility = Visibility.Collapsed };
         gamePanel.Children.Add(gameSelector);
-        var discoveryDetails = new TextBlock { TextWrapping = TextWrapping.Wrap };
+        var discoveryDetails = new TextBlock { TextWrapping = TextWrapping.Wrap, FontFamily = GeistRegular };
         var discoveryExpander = new Expander { Header = "Detection details", Content = discoveryDetails, Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch };
         bool discovering = false, discovered = false;
         var detected = new List<InstalledGame>();
@@ -196,7 +195,10 @@ public sealed partial class MainWindow
             updateLayout();
             FinishTask($"Found {collected.Count:N0} files", errors.Count);
         });
-        page.Children.Add(scanAction);
+        var scanRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        scanRow.Children.Add(selectCategories);
+        scanRow.Children.Add(scanAction);
+        page.Children.Add(scanRow);
         var findingsPanel = Glass(findings);
         page.Children.Add(findingsPanel);
         var issueDetails = new Expander { Header = "Skipped files and scan details", Content = issues, HorizontalAlignment = HorizontalAlignment.Stretch };

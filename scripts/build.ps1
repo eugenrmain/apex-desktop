@@ -1,4 +1,4 @@
-param([switch]$Package, [switch]$Verify, [switch]$Bounded, [string]$OutputDirectory = "artifacts/apex-portable")
+param([switch]$Package, [switch]$Verify, [switch]$Bounded, [string]$OutputDirectory = "artifacts/apx-release-1.0.0")
 $ErrorActionPreference = 'Stop'
 $apexRoot = Split-Path -Parent $PSScriptRoot
 $apexDotnet = Join-Path $apexRoot '.tools/dotnet/dotnet.exe'
@@ -11,6 +11,9 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
 $apexOutput = [IO.Path]::GetFullPath((Join-Path $apexRoot $OutputDirectory))
 if (-not $apexOutput.StartsWith($apexRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Output must remain in the Apex workspace.' }
+$apexRelease = [IO.Path]::GetFullPath((Join-Path $apexRoot 'artifacts/apx-release-1.0.0'))
+if (-not $apexOutput.Equals($apexRelease, [StringComparison]::OrdinalIgnoreCase)) { throw 'Build output must be artifacts/apx-release-1.0.0.' }
+Get-Process -Name 'Apex Desktop' -ErrorAction SilentlyContinue | Stop-Process -Force
 function Remove-ApexGeneratedDirectory([string]$relative) {
     $generatedRoot = [IO.Path]::GetFullPath($apexRoot) + [IO.Path]::DirectorySeparatorChar
     $generatedTarget = [IO.Path]::GetFullPath((Join-Path $apexRoot $relative))
@@ -27,11 +30,11 @@ foreach ($apexVendor in $apexVendorPins.Keys) {
 }
 if ((Get-AuthenticodeSignature -LiteralPath (Join-Path $apexRoot 'Vendor/PawnIOSetup.exe')).Status -ne 'Valid') { throw 'Sensor installer signature verification failed.' }
 
-& $apexDotnet publish (Join-Path $apexRoot 'Apex.csproj') -c Release -p:Platform=x64 -p:BaseOutputPath=artifacts/app-build/ -o $apexOutput
+& $apexDotnet publish (Join-Path $apexRoot 'Apex.csproj') -c Release -p:Platform=x64 -p:BaseOutputPath=.tools/app-build/ -o $apexOutput
 if ($LASTEXITCODE -ne 0) { throw 'Apex build failed.' }
 foreach ($apexHelper in @('Recovery/Apex.Recovery.csproj', 'Sensors/Apex.Sensors.csproj', 'SettingsHelper/Apex.Settings.csproj', 'CaptureHelper/Apex.Capture.csproj', 'NetworkHelper/Apex.Network.csproj')) {
-    $apexHelperOutput = Join-Path $apexRoot 'artifacts/helper-stage'
-    Remove-ApexGeneratedDirectory 'artifacts/helper-stage'
+    $apexHelperOutput = Join-Path $apexRoot '.tools/helper-stage'
+    Remove-ApexGeneratedDirectory '.tools/helper-stage'
     & $apexDotnet publish (Join-Path $apexRoot $apexHelper) -c Release -o $apexHelperOutput
     if ($LASTEXITCODE -ne 0) { throw ('Helper build failed: ' + $apexHelper) }
     foreach ($apexHelperFile in Get-ChildItem -LiteralPath $apexHelperOutput -File) {
@@ -44,10 +47,10 @@ foreach ($apexHelper in @('Recovery/Apex.Recovery.csproj', 'Sensors/Apex.Sensors
     foreach ($apexHelperDirectory in Get-ChildItem -LiteralPath $apexHelperOutput -Directory) {
         Copy-Item -LiteralPath $apexHelperDirectory.FullName -Destination $apexOutput -Recurse -Force
     }
-    Remove-ApexGeneratedDirectory 'artifacts/helper-stage'
+    Remove-ApexGeneratedDirectory '.tools/helper-stage'
 }
 if ($Verify) {
-    $apexVerification = Join-Path $apexRoot 'artifacts/verification'
+    $apexVerification = Join-Path $apexRoot 'artifacts/apx-release-1.0.0/verification'
     $apexArguments = if ($Bounded) { '--verify-bounded "{0}"' -f $apexVerification } else { '--verify "{0}"' -f $apexVerification }
     $apexPreviousData = $env:APX_DATA_ROOT
     try {
@@ -58,12 +61,12 @@ if ($Verify) {
         $env:APX_DATA_ROOT = $apexPreviousData
     }
     $apexResults = Get-Content -LiteralPath (Join-Path $apexVerification 'results.json') -Raw | ConvertFrom-Json
-    if ($apexProcess.ExitCode -ne 0 -or -not $apexResults.passed) { throw 'Verification failed. Inspect artifacts/verification/results.json.' }
+    if ($apexProcess.ExitCode -ne 0 -or -not $apexResults.passed) { throw 'Verification failed. Inspect artifacts/apx-release-1.0.0/verification/results.json.' }
     Write-Host 'All screen verification checks passed.'
 }
 if ($Package) {
-    $apexStage = Join-Path $apexRoot 'artifacts/package-stage'
-    Remove-ApexGeneratedDirectory 'artifacts/package-stage'
+    $apexStage = Join-Path $apexRoot '.tools/package-stage'
+    Remove-ApexGeneratedDirectory '.tools/package-stage'
     New-Item -ItemType Directory -Path $apexStage | Out-Null
     Copy-Item -Path (Join-Path $apexOutput '*') -Destination $apexStage -Recurse
     Copy-Item -LiteralPath (Join-Path $apexRoot 'Packaging/AppxManifest.xml') -Destination (Join-Path $apexStage 'AppxManifest.xml')
@@ -72,7 +75,7 @@ if ($Package) {
     $apexPackageLog = Join-Path $apexRoot 'artifacts/package.log'
     & $apexMakeAppx.FullName pack /d $apexStage /p (Join-Path $apexRoot 'artifacts/Apex-Desktop-x64.msix') /o *> $apexPackageLog
     if ($LASTEXITCODE -ne 0) { throw 'MSIX validation or packaging failed.' }
-    Remove-ApexGeneratedDirectory 'artifacts/package-stage'
+    Remove-ApexGeneratedDirectory '.tools/package-stage'
     Write-Host 'Unsigned MSIX created. Store identity and signing must be configured before distribution.'
 }
 & (Join-Path $PSScriptRoot 'refresh-launch-copies.ps1') -SourceDirectory $apexOutput

@@ -19,6 +19,12 @@ public sealed partial class MainWindow
     private async Task VerifyAsync()
     {
         var args = Environment.GetCommandLineArgs();
+        if (args.Contains("--verify-live"))
+        {
+            int liveIndex = Array.IndexOf(args, "--verify-live");
+            await VerifyLiveAsync(liveIndex + 1 < args.Length ? args[liveIndex + 1] : Path.Combine(AppContext.BaseDirectory, "verification"));
+            return;
+        }
         bool layoutOnly = args.Contains("--verify-layout");
         bool bounded = args.Contains("--verify-bounded");
         int index = Array.IndexOf(args, layoutOnly ? "--verify-layout" : bounded ? "--verify-bounded" : "--verify");
@@ -31,6 +37,8 @@ public sealed partial class MainWindow
             _ = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(AppWindow.Id);
             _ = new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id);
             var functionalChecks = layoutOnly ? new List<string>() : bounded ? await ReleaseChecks.RunAsync(Path.Combine(output, "bounded-" + Guid.NewGuid().ToString("N"))) : await ToolkitChecks.RunAsync(Path.Combine(output, "fixtures-" + Guid.NewGuid().ToString("N")));
+            if (!layoutOnly && !bounded)
+                functionalChecks.AddRange(await ReleaseChecks.RunAsync(Path.Combine(output, "bounded-" + Guid.NewGuid().ToString("N"))));
             if (!layoutOnly)
                 functionalChecks.AddRange(await MediaCompressionChecks.RunAsync(Path.Combine(output, "media-fixtures-" + Guid.NewGuid().ToString("N"))));
             string conversionChecksRoot = Path.Combine(output, "conversion-fixtures-" + Guid.NewGuid().ToString("N"));
@@ -158,7 +166,7 @@ public sealed partial class MainWindow
             File.WriteAllText(conversionFixture, "UI metadata fixture; not encoded by this check");
             conversionField.Text = conversionFixture;
             await Task.Delay(200);
-            if (!Descendants(page).OfType<TextBlock>().Any(t => t.Text == "conversion-selection.mp4") || !Descendants(page).OfType<Button>().Any(b => Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(b) == "Convert to MP3" && b.IsEnabled && b.MinHeight >= 48))
+            if (!Descendants(page).OfType<TextBlock>().Any(t => t.Text == "conversion-selection.mp4") || !Descendants(page).OfType<Button>().Any(b => Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(b) == "Convert to MP3" && b.IsEnabled && b.MinHeight >= 36 && b.MinHeight <= 40))
                 throw new IOException("Converter selection did not show the filename and primary action.");
             await CaptureAsync(Path.Combine(output, "Convert-selected-fixture.png"));
             OpenWorkspace("System");
@@ -539,15 +547,15 @@ public sealed partial class MainWindow
                 throw new IOException("Removed Compare tool is still visible.");
             await Task.Delay(150);
             root.UpdateLayout();
-            var flameMark = Descendants(page).OfType<Grid>().First(g => Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(g) == "Apex flame");
-            if (flameMark.IsHitTestVisible || Descendants(flameMark).OfType<Image>().Count() != 1)
-                throw new IOException("Flame still has interactive effects.");
-            await CaptureAsync(Path.Combine(output, "Home-static-flame.png"));
+            var brandMark = Descendants(page).OfType<Grid>().First(g => Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(g) == "Apex mark");
+            if (brandMark.IsHitTestVisible || Descendants(brandMark).OfType<Microsoft.UI.Xaml.Shapes.Path>().Count() != 2)
+                throw new IOException("Brand mark is interactive or missing its vector flame and bolt.");
+            await CaptureAsync(Path.Combine(output, "Home-static-mark.png"));
             checks.Add(new
             {
                 route = "Home",
                 compareRemoved = true,
-                staticBitmapFlame = true,
+                staticVectorMark = true,
                 noHoverEffect = true
             });
             if (AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
@@ -638,6 +646,58 @@ public sealed partial class MainWindow
         }
         finally { Close(); }
     }
+    private async Task VerifyLiveAsync(string output)
+    {
+        Directory.CreateDirectory(output);
+        var checks = new List<string>();
+        using var lifetime = new CancellationTokenSource();
+        Task? loop = null;
+        try
+        {
+            monitoring ??= new();
+            loop = DiagnosticsLoop(lifetime.Token);
+            for (int i = 0; i < 40 && lastMonitor?.Cpu is null; i++)
+                await Task.Delay(250);
+            var first = lastMonitor ?? throw new IOException("Live Windows monitoring produced no reading.");
+            if (first.Cpu is not double cpu || !double.IsFinite(cpu) || cpu < 0 || cpu > 100 || first.MemoryTotal <= 0 || first.MemoryUsed < 0 || first.MemoryUsed > first.MemoryTotal)
+                throw new IOException("Live CPU or RAM reading is invalid.");
+            checks.Add("Live Windows CPU and RAM readings are within valid bounds");
+            if (first.Gpu is double gpu && (!double.IsFinite(gpu) || gpu < 0 || gpu > 100))
+                throw new IOException("Live GPU reading is invalid.");
+            checks.Add(first.Gpu.HasValue ? "Live GPU counter returns a valid utilization percentage" : "Unavailable GPU counter remains unavailable rather than showing a fabricated value");
+            for (int i = 0; i < 40 && lastMonitor?.TimeUtc == first.TimeUtc; i++)
+                await Task.Delay(250);
+            if (lastMonitor?.TimeUtc == first.TimeUtc)
+                throw new IOException("Live footer monitoring stopped refreshing.");
+            checks.Add("Live monitoring refreshes beyond its first reading");
+            foreach (string route in VerificationRoutes)
+            {
+                ShowPage(route);
+                await Task.Delay(100);
+                if (diagnosticStatus.Visibility != Visibility.Visible || !diagnosticStatus.Text.Contains("CPU ") || !diagnosticStatus.Text.Contains("GPU ") || !diagnosticStatus.Text.Contains("RAM ") || !diagnosticStatus.Text.Contains("Disk "))
+                    throw new IOException("Live footer missing on " + route);
+            }
+            checks.Add("CPU, GPU, RAM and disk footer remains visible on all fourteen pages");
+            ShowPage("Home");
+            await Task.Delay(250);
+            if (Descendants(page).OfType<TextBlock>().Any(t => t.Text == "APX STUDIOS"))
+                throw new IOException("Repeated studio label remains on Home.");
+            checks.Add("Repeated Home studio label removed");
+            await CaptureAsync(Path.Combine(output, "Home-live-metrics.png"));
+            File.WriteAllText(Path.Combine(output, "live-results.json"), JsonSerializer.Serialize(new { passed = true, checks, footer = diagnosticStatus.Text, cpu = lastMonitor?.Cpu, gpu = lastMonitor?.Gpu, memoryUsed = lastMonitor?.MemoryUsed, memoryTotal = lastMonitor?.MemoryTotal }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch (Exception error)
+        {
+            File.WriteAllText(Path.Combine(output, "live-results.json"), JsonSerializer.Serialize(new { passed = false, checks, error = error.ToString() }));
+        }
+        finally
+        {
+            lifetime.Cancel();
+            if (loop is not null) await loop;
+            Close();
+        }
+    }
+
     private static async Task InvokeNavigation(Button button)
     {
         var peer = new Microsoft.UI.Xaml.Automation.Peers.ButtonAutomationPeer(button);

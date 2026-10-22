@@ -41,5 +41,6 @@
     <Content Include="Assets/*.wav" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets/*.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets/Apex.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/Fonts/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

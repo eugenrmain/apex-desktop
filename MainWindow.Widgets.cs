@@ -6,14 +6,14 @@ public sealed partial class MainWindow
 {
     private ToggleButton OptionWidget(string title, string glyph, string detail, bool enabled, Action<bool> changed, bool available = true)
     {
-        var copy = new StackPanel { Spacing = 4 };
+        var copy = new StackPanel { Spacing = 2 };
         var label = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        label.Children.Add(Icon(glyph, 20, "#83DDFF"));
+        label.Children.Add(Icon(glyph, 16, "#A8BACB"));
         label.Children.Add(Text(title, Ui.Body, "#EDF3FF", true));
         copy.Children.Add(label);
         var state = Text("", Ui.Supporting, "#A9BAD4");
         copy.Children.Add(state);
-        var toggle = new ToggleButton { Content = copy, IsChecked = enabled, IsEnabled = available, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new(12), MinHeight = 80, CornerRadius = new(12), BorderThickness = new(1) };
+        var toggle = new ToggleButton { Content = copy, IsChecked = enabled, IsEnabled = available, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new(12, 8, 12, 8), MinHeight = 56, CornerRadius = new(8), BorderThickness = new(1) };
         ToolTipService.SetToolTip(toggle, detail);
         toggle.Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load("<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='ToggleButton'><Border Background='{TemplateBinding Background}' BorderBrush='{TemplateBinding BorderBrush}' BorderThickness='{TemplateBinding BorderThickness}' CornerRadius='{TemplateBinding CornerRadius}' Padding='{TemplateBinding Padding}'><ContentPresenter Content='{TemplateBinding Content}' HorizontalAlignment='{TemplateBinding HorizontalContentAlignment}' VerticalAlignment='{TemplateBinding VerticalContentAlignment}'/></Border></ControlTemplate>");
         toggle.Resources["ToggleButtonBackgroundChecked"] = Brush("#30467BDC");
@@ -28,8 +28,8 @@ public sealed partial class MainWindow
         {
             bool on = toggle.IsChecked == true;
             state.Text = available ? (on ? "Included" : "Excluded") : "Manual / unavailable";
-            toggle.Background = Brush(on ? (hovered ? "#48467BDC" : "#30467BDC") : (hovered ? "#24FFFFFF" : "#10090E1C"));
-            toggle.BorderBrush = Brush(on ? "#EF67D8FF" : hovered ? "#7067D8FF" : "#357388AE");
+            toggle.Background = Brush(on ? (hovered ? "#FF242C38" : "#FF1B242F") : (hovered ? "#FF1B202A" : "#B00E121A"));
+            toggle.BorderBrush = Brush(on ? "#807A9AAC" : hovered ? "#455F7185" : "#24FFFFFF");
             copy.Opacity = on ? 1 : .8;
         }
         toggle.PointerEntered += (_, _) => { hovered = true; Render(); };
@@ -41,9 +41,9 @@ public sealed partial class MainWindow
         Automation(toggle, title);
         return toggle;
     }
-    private Grid WidgetGrid(IEnumerable<UIElement> items, bool compact = false)
+    private Grid WidgetGrid(IEnumerable<UIElement> items, bool compact = false, bool dense = false)
     {
-        var grid = new Grid { ColumnSpacing = 16, RowSpacing = 16 };
+        var grid = new Grid { ColumnSpacing = dense ? 10 : 16, RowSpacing = dense ? 10 : 16 };
         for (int i = 0; i < 3; i++)
             grid.ColumnDefinitions.Add(new()
             {
@@ -53,7 +53,7 @@ public sealed partial class MainWindow
             grid.Children.Add(item);
         void Arrange()
         {
-            int columns = grid.ActualWidth < 620 ? 1 : grid.ActualWidth < (compact ? 820 : 1000) ? 2 : 3;
+            int columns = grid.ActualWidth < (dense ? 480 : 620) ? 1 : grid.ActualWidth < (dense ? 760 : compact ? 820 : 1000) ? 2 : 3;
             if (grid.ColumnDefinitions.Count != columns)
             {
                 grid.ColumnDefinitions.Clear();

@@ -19,9 +19,11 @@ public sealed partial class MainWindow
     private readonly Queue<MonitorSample> monitorHistory = new();
     private Action<MonitorSample>? renderDiagnostics;
     private MonitorSample? lastMonitor;
+    private long footerInfoStamp;
+    private bool windowActive = true;
     private bool performanceLoaded;
     private string? performanceLoadError;
-    private bool verificationMode => Environment.GetCommandLineArgs().Any(a => a is "--verify" or "--verify-layout" or "--verify-bounded");
+    private bool verificationMode => Environment.GetCommandLineArgs().Any(a => a is "--verify" or "--verify-layout" or "--verify-bounded" or "--verify-live");
 
     private void EnsurePerformanceLoaded()
     {
@@ -45,29 +47,60 @@ public sealed partial class MainWindow
     }
     private async Task DiagnosticsLoop(CancellationToken token)
     {
+        string disk = "Disk —", power = "Power —", shown = "";
         while (!token.IsCancellationRequested)
         {
+            // Diagnostics refreshes every second; the footer alone needs far less, especially in the background.
+            int delay = 2000;
             try
             {
-                bool visible = currentPage == "Diagnostics" && (AppWindow.Presenter is not Microsoft.UI.Windowing.OverlappedPresenter p || p.State != Microsoft.UI.Windowing.OverlappedPresenterState.Minimized);
+                bool visible = AppWindow.IsVisible && (AppWindow.Presenter is not Microsoft.UI.Windowing.OverlappedPresenter p || p.State != Microsoft.UI.Windowing.OverlappedPresenterState.Minimized);
                 bool recording = gameCapture?.IsRecording == true;
-                sensorSession.SetPaused(!visible && !recording);
+                bool detailed = currentPage == "Diagnostics";
+                sensorSession.SetPaused((!visible || !detailed) && !recording);
                 if (visible && !recording)
                 {
+                    delay = !windowActive ? 5000 : detailed ? 1000 : 2000;
                     monitoring!.Sensors = sensorSession.Latest;
-                    var sample = await monitoring.SampleAsync(token);
+                    var sample = await monitoring.SampleAsync(token, detailed);
+                    if (!detailed && lastMonitor is not null)
+                        sample = sample with { Processes = lastMonitor.Processes };
                     lastMonitor = sample;
                     monitorHistory.Enqueue(sample);
                     while (monitorHistory.Count > 120)
                         monitorHistory.Dequeue();
-                    if (currentPage == "Diagnostics")
+                    if (detailed)
                         renderDiagnostics?.Invoke(sample);
+                    if (footerInfoStamp == 0 || Stopwatch.GetElapsedTime(footerInfoStamp) > TimeSpan.FromSeconds(30))
+                    {
+                        footerInfoStamp = Stopwatch.GetTimestamp();
+                        (disk, power) = await Task.Run(FooterInfo, token);
+                    }
+                    string text = $"CPU {(sample.Cpu is double cpu ? $"{cpu:0}%" : "—")}   ·   GPU {(sample.Gpu is double gpu ? $"{gpu:0}%" : "—")}   ·   RAM {sample.MemoryUsed / 1073741824d:0.0} / {sample.MemoryTotal / 1073741824d:0.0} GB   ·   {disk}   ·   {power}";
+                    if (text != shown)
+                    {
+                        shown = text;
+                        diagnosticStatus.Text = text;
+                        ToolTipService.SetToolTip(diagnosticStatus, text);
+                    }
                 }
-                await Task.Delay(1000, token);
+                await Task.Delay(delay, token);
             }
             catch (OperationCanceledException) { break; }
-            catch (Exception e) { if (currentPage == "Diagnostics") status.Text = "Monitoring unavailable: " + e.Message; await Task.Delay(1000, CancellationToken.None); }
+            catch (Exception e) { if (currentPage == "Diagnostics") status.Text = "Monitoring unavailable: " + e.Message; await Task.Delay(delay, CancellationToken.None); }
         }
+    }
+    private static (string Disk, string Power) FooterInfo()
+    {
+        string disk = "Disk —", power = "Power —";
+        try { disk = $"Disk {new DriveInfo(Path.GetPathRoot(Environment.SystemDirectory)!).AvailableFreeSpace / 1073741824d:0.0} GB free"; } catch { }
+        try
+        {
+            string active = WindowsPerformance.Read(new(PlanActionKind.PowerPlan, "Active", "", "Power plan"));
+            power = WindowsPerformance.PowerSchemes().FirstOrDefault(p => p.Id.ToString().Equals(active, StringComparison.OrdinalIgnoreCase))?.Name ?? power;
+        }
+        catch { }
+        return (disk, power);
     }
     private UIElement Metric(string title, string unit, Func<MonitorSample, double?> value, out Action<MonitorSample> update, double? ceiling = null, bool inner = false)
     {

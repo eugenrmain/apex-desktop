@@ -1,13 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#A35EF2"/><stop offset="1" stop-color="#2DB8FC"/></linearGradient>
-    <radialGradient id="core"><stop stop-color="#93E0FF" stop-opacity=".55"/><stop offset="1" stop-color="#93E0FF" stop-opacity="0"/></radialGradient>
-    <clipPath id="flame"><path d="M36 3C36 17 26 21 24 32C20 29 18 24 18 18C8 28 5 37 7 46C9 57 20 62 31 62C48 62 59 51 57 37C56 26 48 19 45 13C46 24 41 29 38 30C42 19 42 11 36 3Z"/></clipPath>
+    <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#7A45E6"/><stop offset=".5" stop-color="#4F4BD8"/><stop offset="1" stop-color="#2F62F0"/></linearGradient>
   </defs>
-  <rect width="64" height="64" rx="15" fill="#0B1022"/>
-  <g transform="translate(4.23 3.80) scale(.8678)">
-    <path d="M36 3C36 17 26 21 24 32C20 29 18 24 18 18C8 28 5 37 7 46C9 57 20 62 31 62C48 62 59 51 57 37C56 26 48 19 45 13C46 24 41 29 38 30C42 19 42 11 36 3Z" fill="url(#body)"/>
-    <circle cx="32" cy="43" r="12" clip-path="url(#flame)" fill="url(#core)"/>
-    <path d="M33 34L28 43L32 43L30 50L38 39L34 39L36 34Z" fill="#FFFFFF"/>
+  <rect width="64" height="64" rx="15" fill="#0A0F1E"/>
+  <g transform="translate(32 32.5) scale(.82) translate(-32 -32.5)">
+    <path d="M35.28,3 C35.28,17 27.08,21 25.44,32 C22.16,29 20.52,24 20.52,18 C12.32,28 9.86,37 11.5,46 C13.14,57 22.16,62 31.18,62 C45.12,62 54.14,51 52.5,37 C51.68,26 45.12,19 42.66,13 C43.48,24 39.38,29 36.92,30 C40.2,19 40.2,11 35.28,3 Z" fill="url(#flame)"/>
+    <path d="M32.82,32.4 L27.9,43.2 L31.84,43.2 L29.87,51.6 L37.74,38.4 L33.81,38.4 L35.78,32.4 Z" fill="#FFFFFF"/>
   </g>
 </svg>

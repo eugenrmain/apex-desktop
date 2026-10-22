@@ -19,6 +19,7 @@ public sealed partial class MainWindow : Window
     private readonly Grid root = new();
     private readonly StackPanel page = new() { Spacing = 22, HorizontalAlignment = HorizontalAlignment.Left };
     private readonly TextBlock status = Text("Ready", 12, "#A9BAD4");
+    private readonly TextBlock diagnosticStatus = Text("CPU —   ·   GPU —   ·   RAM —   ·   Disk —", 11, "#92A5C1");
     private readonly Preferences preferences = Preferences.Load();
     private readonly UISettings uiSettings = new();
     private readonly NativePickers pickers;
@@ -68,6 +69,9 @@ public sealed partial class MainWindow : Window
         var glow = new Image { Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/Backdrop.png")), Stretch = Stretch.Fill, IsHitTestVisible = false, Opacity = .65 };
         Grid.SetRowSpan(glow, 3);
         root.Children.Add(glow);
+        var coolShade = new Border { Background = Brush("#6006080E"), IsHitTestVisible = false };
+        Grid.SetRowSpan(coolShade, 3);
+        root.Children.Add(coolShade);
         uiSettings.AdvancedEffectsEnabledChanged += (_, _) => DispatcherQueue.TryEnqueue(ApplyBackdrop);
         Closed += (_, _) => { boostPageLifetime?.Cancel(); diagnosticLifetime?.Cancel(); sensorSession.Dispose(); simulation?.Cancel(); DismissTaskNotice(); PlayCompletionSound(null, 0, 0); };
         BuildChrome();
@@ -85,8 +89,12 @@ public sealed partial class MainWindow : Window
                 DismissInformation(false);
         };
         ShowPage("Home");
+        root.Loaded += (_, _) => StartDiagnosticsLoop();
+        // Start focus without a keyboard ring; Tab still reveals focus visuals for keyboard users.
+        root.Loaded += (_, _) => navigation["Home"].Focus(FocusState.Pointer);
+        Activated += (_, e) => windowActive = e.WindowActivationState != WindowActivationState.Deactivated;
         var arguments = Environment.GetCommandLineArgs();
-        if (arguments.Contains("--verify") || arguments.Contains("--verify-layout") || arguments.Contains("--verify-bounded"))
+        if (arguments.Contains("--verify") || arguments.Contains("--verify-layout") || arguments.Contains("--verify-bounded") || arguments.Contains("--verify-live"))
         {
             root.Loaded += async (_, _) => await VerifyAsync();
         }
@@ -94,8 +102,9 @@ public sealed partial class MainWindow : Window
 
     private void ApplyBackdrop()
     {
-        bool glass = uiSettings.AdvancedEffectsEnabled && !preferences.SolidBackground && Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController.IsSupported();
-        SystemBackdrop = glass ? new GlassBackdrop() : null;
+        // Mica samples the wallpaper once instead of re-blurring the live desktop like acrylic.
+        bool glass = uiSettings.AdvancedEffectsEnabled && !preferences.SolidBackground && Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported();
+        SystemBackdrop = glass ? new MicaBackdrop { Kind = Microsoft.UI.Composition.SystemBackdrops.MicaKind.BaseAlt } : null;
         root.Background = glass ? Brush("#A6070B18") : Gradient("#FF070B16", "#FF0B142A", "#FF17132F");
     }
 
@@ -111,8 +120,11 @@ public sealed partial class MainWindow : Window
             Width = GridLength.Auto
         });
         var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, VerticalAlignment = VerticalAlignment.Center };
-        brand.Children.Add(Flame(22));
-        brand.Children.Add(Text("Apex Desktop", 18, "#EDF3FF", true));
+        brand.Children.Add(FlameMark(20, "Apex"));
+        var productName = Text("Apex Desktop", 14, "#EDF3FF");
+        productName.FontFamily = GeistMedium;
+        productName.CharacterSpacing = 20;
+        brand.Children.Add(productName);
         title.Children.Add(brand);
         var badge = Text("APX STUDIOS  /  " + AppVersion, 10, "#899BB8");
         badge.CharacterSpacing = 160;
@@ -185,7 +197,16 @@ public sealed partial class MainWindow : Window
         status.MaxLines = 1;
         status.TextTrimming = TextTrimming.CharacterEllipsis;
         status.Margin = new Thickness(0, 0, 12, 0);
-        footer.Children.Add(status);
+        var footerStatus = new Grid();
+        footerStatus.ColumnDefinitions.Add(new() { Width = GridLength.Auto });
+        footerStatus.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
+        footerStatus.Children.Add(status);
+        diagnosticStatus.MaxLines = 1;
+        diagnosticStatus.TextWrapping = TextWrapping.NoWrap;
+        diagnosticStatus.TextTrimming = TextTrimming.CharacterEllipsis;
+        Grid.SetColumn(diagnosticStatus, 1);
+        footerStatus.Children.Add(diagnosticStatus);
+        footer.Children.Add(footerStatus);
         stopRecording.Click += (_, _) => simulation?.Cancel();
         Grid.SetColumn(stopRecording, 1);
         footer.Children.Add(stopRecording);
@@ -208,6 +229,7 @@ public sealed partial class MainWindow : Window
         if (!allowWorkingNavigation)
             simulation?.Cancel();
         currentPage = name;
+        footerInfoStamp = 0;
         page.Children.Clear();
         Descendants(root).OfType<ScrollViewer>().FirstOrDefault(s => ReferenceEquals(s.Content, page))?.ChangeView(null, 0, null, true);
         page.Spacing = 16;
@@ -275,13 +297,10 @@ public sealed partial class MainWindow : Window
             Width = GridLength.Auto
         });
         var introduction = new StackPanel { Spacing = 10, VerticalAlignment = VerticalAlignment.Center };
-        var studio = Text("APX STUDIOS", 11, "#83DDFF", true);
-        studio.CharacterSpacing = 200;
-        introduction.Children.Add(studio);
-        introduction.Children.Add(Text("Apex Desktop", 40, "#F2F6FF", true));
-        introduction.Children.Add(Text("Windows tweaks · Gaming preparation · System cleanup", Ui.Body, "#A9BAD4"));
+        introduction.Children.Add(Text("Apex Desktop", 44, "#F2F6FF", true));
+        introduction.Children.Add(Text("System tools, gaming controls, and media utilities.", Ui.Body, "#A9BAD4"));
         hero.Children.Add(introduction);
-        var emblem = FlameMark();
+        var emblem = FlameMark(96);
         Grid.SetColumn(emblem, 1);
         hero.Children.Add(emblem);
         page.Children.Add(hero);
@@ -313,7 +332,7 @@ public sealed partial class MainWindow : Window
         {
             Width = GridLength.Auto
         });
-        heading.Children.Add(new Border { Width = 38, Height = 38, CornerRadius = new CornerRadius(12), Background = Gradient("#5663CFFF", "#228680EE", "#0CBB71E9"), BorderBrush = Brush("#687DDCFF"), BorderThickness = new Thickness(1), Child = Icon(glyph, 18, "#C9EFFF") });
+        heading.Children.Add(new Border { Width = 38, Height = 38, CornerRadius = new CornerRadius(12), Background = Gradient("#5663CFFF", "#228680EE", "#0CBB71E9"), BorderBrush = Brush("#687DDCFF"), BorderThickness = new Thickness(1), Child = route == "Compress" ? CompressionIcon() : Icon(glyph, 18, "#C9EFFF") });
         var title = Text(name, 20, "#EDF3FF", true);
         Grid.SetColumn(title, 1);
         heading.Children.Add(title);
@@ -331,6 +350,8 @@ public sealed partial class MainWindow : Window
         button.Click += (_, _) => { if (route is null) OpenWorkspace(name); else ShowPage(route); };
         return button;
     }
+
+    private static UIElement CompressionIcon() => (UIElement)Microsoft.UI.Xaml.Markup.XamlReader.Load("<Viewbox xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='18' Height='18'><Path Width='24' Height='24' Data='M2,12 L8,12 M4,8 L8,12 L4,16 M22,12 L16,12 M20,8 L16,12 L20,16 M12,5 L12,19' Stroke='#C9EFFF' StrokeThickness='1.5' StrokeStartLineCap='Round' StrokeEndLineCap='Round' StrokeLineJoin='Round'/></Viewbox>");
 
     private void Settings()
     {
@@ -475,18 +496,14 @@ public sealed partial class MainWindow : Window
         var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         content.Children.Add(Icon(glyph, 14, "#DEEAFF"));
         content.Children.Add(Text(text, Ui.Body, "#DEEAFF"));
-        var button = new Button { Content = content, MinHeight = 40, CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 10, 12, 10) };
+        var button = new Button { Content = content, MinHeight = 34, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 7, 12, 7) };
         Automation(button, text);
         button.Click += action;
         return button;
     }
     private static void Automation(DependencyObject element, string name) => Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(element, name);
     private static FontIcon Icon(string glyph, double size, string color) => new() { Glyph = glyph, FontFamily = new FontFamily("Segoe Fluent Icons"), FontSize = size, Foreground = Brush(color), VerticalAlignment = VerticalAlignment.Center };
-    private static Image Flame(double size, bool transparent = false)
-    {
-        return new Image { Width = size, Height = size, Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(transparent ? "ms-appx:///Assets/FlameMark.png" : "ms-appx:///Assets/AppIcon.png")), Stretch = Stretch.Uniform };
-    }
-    private static TextBlock Text(string value, double size, string color, bool bold = false) => new() { Text = value, FontSize = size is 13 or 15 ? Ui.Body : size, Foreground = Brush(color), FontWeight = bold ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal, TextWrapping = TextWrapping.Wrap, FontFamily = new FontFamily("Segoe UI Variable"), VerticalAlignment = VerticalAlignment.Center };
+    private static TextBlock Text(string value, double size, string color, bool bold = false) => new() { Text = value, FontSize = size is 13 or 15 ? Ui.Body : size, Foreground = Brush(color), FontFamily = bold ? GeistMedium : GeistRegular, CharacterSpacing = bold && size >= 28 ? -12 : 0, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
     private static SolidColorBrush Brush(string color) => new(ColorOf(color));
     private static Color ColorOf(string hex)
     {
